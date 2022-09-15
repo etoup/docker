@@ -1,0 +1,57 @@
+version: '3'
+services:
+  # hyperf
+  hyperf:
+    image: hyperf/hyperf:${HYPERF_VERSION}
+    hostname: hyperf
+    container_name: hyperf
+    restart: always
+    privileged: true
+    ports:
+      - '${HYPERF_HOST_PORT}:9501'
+      - '9601:9601'
+    links:
+      - mysql
+      - redis
+    volumes:
+      - ${HYPERF_WORK_DIR}:/hyperf-skeleton
+    tty: true
+    networks:
+      - dev_networks
+
+  # mysql
+  mysql:
+    container_name: mysql
+    hostname: mysql
+    image: mysql:${MYSQL_VERSION}
+    privileged: true
+    expose:
+      - "3306"
+    ports:
+      - '${MYSQL_HOST_PORT}:3306'
+    volumes:
+      - ${MYSQL_CONF_FILE}:/etc/mysql/my.cnf
+      - ${MYSQL_DATA_DIR}:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD}'
+    networks:
+      - dev_networks
+
+  # redis
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:${REDIS_VERSION}
+    ports:
+      - '${REDIS_HOST_PORT}:6379'
+    volumes:
+      - ${REDIS_CONF_FILE}:/etc/redis/redis.conf
+      - ${REDIS_DATA_DIR}:/data
+    restart: always
+    entrypoint: ['redis-server', '/etc/redis/redis.conf']
+    networks:
+      - dev_networks
+
+networks:
+  dev_networks:
